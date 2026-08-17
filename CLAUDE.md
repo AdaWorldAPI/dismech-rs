@@ -113,3 +113,26 @@ cargo run --release --bin dismech_bake -- /path/to/dismech --out rows.soa
 # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY):
 scripts/upload-bake.sh <tag> rows.soa
 ```
+
+## Reference documents
+
+Board hygiene for this repo lives under `.claude/board/` and
+`.claude/plans/`, mirroring the pattern the sibling `lance-graph` and
+`MedCare-rs` repos use. Read these before doing substantial work here:
+
+- `.claude/board/LATEST_STATE.md` — mutable "what exists now": crate
+  inventory, the classid reservation and its collision-avoidance
+  history, current bake stats, active/queued work.
+- `.claude/board/PR_ARC_INVENTORY.md` — append-only, one row per merged
+  PR (Added/Locked/Deferred/Docs/Confidence).
+- `.claude/board/INTEGRATION_PLANS.md` — append-only index of versioned
+  plans under `.claude/plans/<name>-v<N>.md`.
+- `.claude/board/TECH_DEBT.md` — known gaps, not yet fixed (starting
+  with the still-open `ogar-dismech` classid collision guard).
+- `.claude/board/EPIPHANIES.md` — append-only, dated findings and
+  corrections (starting with the source-correction finding: the
+  `AdaWorldAPI/dismech` fork was stale, the real upstream is
+  `monarch-initiative/dismech`).
+- `.claude/board/AGENT_LOG.md` — append-only, one-writer session record.
+- `.claude/plans/ogar-classid-registration-v1.md` — the still-open plan
+  to register `0x0333` as a compile-time collision guard in OGAR.
