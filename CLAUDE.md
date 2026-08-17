@@ -83,13 +83,34 @@ full real corpus: 1,990/1,990 files parsed, **zero parse errors**,
 
 ## Open questions — not yet decided
 
-- ~~Should `MedCare-rs`'s `crates/medcare-dismech` move here?~~
-  **Corrected 2026-08-17:** re-checked directly against the live
-  `MedCare-rs` checkout — no such crate exists anywhere in that repo
-  (`find -iname "*dismech*"` returns zero hits). This question was
-  carried forward from an earlier, apparently mistaken, session claim.
-  There is nothing to move and no decision pending. (See
-  `.claude/board/TECH_DEBT.md` for the full correction.)
+- **Should `MedCare-rs`'s `crates/medcare-dismech` move here?**
+  **Re-corrected 2026-08-17 (second correction — the first correction
+  was itself wrong):** an earlier pass in this repo claimed the crate
+  "does not exist", based on a `find` run against a local `MedCare-rs`
+  checkout that was 193 commits behind `origin/main` on a stale branch
+  from earlier in the same session — the check never touched the real
+  state. Re-verified against a fresh `MedCare-rs` clone synced to
+  `origin/main`: `crates/medcare-dismech` is real and substantial — 5
+  modules (`lib.rs`, `model.rs`, `identity.rs`, `graph.rs`, `parity.rs`)
+  plus 4 binaries (`bake_dismech`, `dismech_census`, `dismech_identity`,
+  `dismech_parity`), ~2,000 lines, documented in
+  `MedCare-rs/docs/CAUSALITY_V3_DISMECH_CONTRACT.md` and
+  `docs/DISMECH_BAKE_PLAN.md`. Per its own module doc: it is a
+  from-scratch Rust transcode of the Python DisMech resolver's
+  `graph.py::build_causal_graph`, validated by `parity.rs`/
+  `dismech_parity` diffing the Rust output against 1,870 committed
+  `pathographs/MONDO_*.json` files (the Python resolver's own output) —
+  never invoking Python at build or test time. Whether that parity gate
+  is CURRENTLY green, and whether the Python source + pathographs are
+  still present in a checkout, was **not** re-verified in this pass
+  (this repo has no access to `MedCare-rs`'s private checkout state
+  beyond a point-in-time read) — that is `MedCare-rs`'s own thing to
+  confirm, not this repo's. Recommendation on the move-or-not question
+  itself is unchanged from before either correction: not yet decided,
+  and not this repo's call to make unilaterally — it is a
+  `MedCare-rs`-side architectural decision. (See `.claude/board/
+  TECH_DEBT.md` for the full correction history — two entries now,
+  the first correction and this one, both struck rather than deleted.)
 - **`ogar-dismech`** — exists now. Built and merged 2026-08-17:
   https://github.com/AdaWorldAPI/OGAR/pull/274. It is the OGAR-side
   compile-time collision guard for `0x0333` (mirrors `ogar-ro`'s
