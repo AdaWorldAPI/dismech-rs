@@ -7,40 +7,25 @@
 
 ---
 
-## OPEN — `0x0333` classid is not yet collision-guarded on the OGAR side
+## ~~OPEN — `0x0333` classid is not yet collision-guarded on the OGAR side~~ RESOLVED 2026-08-17
 
-**Dated:** 2026-08-17
+**Dated:** 2026-08-17 (opened and resolved same day)
 
-**What:** `DISMECH_CONCEPT: u16 = 0x0333` (`crates/dismech-bake/src/
-pack.rs:36`) is currently documented ONLY in this repo (`CLAUDE.md` +
-`LATEST_STATE.md`). It was measured clear of every existing OGAR `0x03XX`
-registration at the time of reservation (`grep -rn "0x0333"` across every
-crate in `AdaWorldAPI/OGAR`, zero hits before this reservation), but
-nothing on the OGAR side actually *enforces* that — there is no
-compile-time test that would fail if some future OGAR change (e.g. a
-`META_STUDY_SPINE`-style expansion) accidentally claimed `0x0333`.
+**What it was:** `DISMECH_CONCEPT: u16 = 0x0333` (`crates/dismech-bake/
+src/pack.rs:36`) was documented only in this repo, with no compile-time
+enforcement on the OGAR side against a future collision.
 
-**Why it matters:** OGAR's own `0x03XX` domain has a real collision
-history — `OBO_CORE` (`0x0301`-`0x0305`), `ogar-ro`'s
-`RELATION_BODY_CONCEPT_ID` (`0x0306`), a private downstream consumer's
-odd-stride run (`0x0307`-`0x031D` live, `0x031F`/`0x0321`
-retired-not-reused), and `META_STUDY_SPINE` (`0x0340`-`0x0347`, which
-itself collided twice before landing there). A silent future collision
-at `0x0333` would corrupt cross-domain joins (the mirrored-addressing
-scheme this repo depends on for the 98.3% MONDO-resolved disorders).
-
-**The fix (not yet built):** `ogar-ro` already has the pattern —
-`RELATION_BODY_CONCEPT_ID = 0x0306` plus a `#[cfg(test)] mod
-concept_id_collision_guard` asserting no `ogar_obo::registry::{OBO_CORE,
-META_STUDY_SPINE}` row claims the same id. Mirror it exactly: a new tiny
-OGAR crate `ogar-dismech` with `DISMECH_CONCEPT_ID: u16 = 0x0333` plus an
-equivalent guard test. See `.claude/plans/ogar-classid-registration-v1.md`
-for the full checklist.
-
-**Scope note:** this repo's `dismech-bake` crate does NOT gain an OGAR
-dependency as part of this fix — the guard lives entirely on the OGAR
-(authority) side. `dismech-bake` stays zero-dependency for the byte
-layout, same as today.
+**Resolution:** `ogar-dismech` — a new tiny crate in `AdaWorldAPI/OGAR`
+mirroring `ogar-ro`'s `RELATION_BODY_CONCEPT_ID` pattern exactly:
+`DISMECH_CONCEPT_ID: u16 = 0x0333` plus a `concept_id_collision_guard`
+test module asserting no `ogar_obo::registry::{OBO_CORE,
+META_STUDY_SPINE}` row claims it, and a band-clearance test against the
+documented odd-stride run (`0x0307`-`0x031D` live, `0x031F`/`0x0321`
+retired) and `META_STUDY_SPINE` (`0x0340`-`0x0347`). Merged:
+https://github.com/AdaWorldAPI/OGAR/pull/274 (commit `15c5dcb`).
+`dismech-bake` stayed zero-dependency, as scoped — the guard lives
+entirely on the OGAR (authority) side. Full checklist:
+`.claude/plans/ogar-classid-registration-v1.md`.
 
 ---
 
@@ -70,16 +55,18 @@ are named goals only.
 
 ---
 
-## OPEN — `MedCare-rs`'s `medcare-dismech` crate: move-or-not undecided
+## ~~OPEN — `MedCare-rs`'s `medcare-dismech` crate: move-or-not undecided~~ CORRECTED 2026-08-17
 
-**Dated:** 2026-08-17
+**Dated:** 2026-08-17 (opened and corrected same day)
 
-**What:** `MedCare-rs` has an earlier hand-transcribed causal-graph
-resolver (`crates/medcare-dismech`) built against a Python source
-citation that turned out to reference a file that does not exist in the
-real `monarch-initiative/dismech` upstream. Recommended path (not yet
-executed): re-ground that resolver's behavior against this repo's real
-corpus bake once it covers enough of the graph to be a real replacement,
-then decide on the move. See `CLAUDE.md` "Open questions" for the full
-statement — this is a private-repo-facing decision, tracked here only as
-a pointer.
+**What this entry claimed:** that `MedCare-rs` has an earlier
+hand-transcribed causal-graph resolver crate (`crates/medcare-dismech`)
+that might need moving here.
+
+**Correction:** re-checked directly against the live `MedCare-rs`
+checkout — `find /home/user/MedCare-rs -iname "*dismech*"` returns zero
+hits, in both `crates/` and the whole tree. No such crate exists. This
+entry (and the matching line in `CLAUDE.md`'s "Open questions") was
+carried forward from an earlier, apparently mistaken, session claim —
+struck here rather than deleted per this repo's TECH_DEBT convention.
+There is nothing to move and no decision pending.

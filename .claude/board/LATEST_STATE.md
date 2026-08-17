@@ -42,9 +42,10 @@ consumer holds an odd-stride run from `0x0307` through `0x031D` (live,
 with `0x031F` and `0x0321` retired-not-reused); `META_STUDY_SPINE` landed
 at `0x0340`-`0x0347` after two prior collisions. `0x0333` sits clear of
 all of the above — above the private consumer's run ending `0x0321`,
-below `META_STUDY_SPINE`'s `0x0340` — **but is currently documented only
-in this repo, not yet protected by a compile-time collision guard on the
-OGAR side.** See `TECH_DEBT.md` and `.claude/plans/ogar-classid-registration-v1.md`.
+below `META_STUDY_SPINE`'s `0x0340` — **and is now compile-time
+collision-guarded on the OGAR side** via `ogar-dismech`
+(https://github.com/AdaWorldAPI/OGAR/pull/274, merged 2026-08-17). See
+`.claude/plans/ogar-classid-registration-v1.md` (all items checked).
 
 **Mirrored addressing**: where a disorder resolves to a `MONDO:<num>`
 xref (measured 1,957/1,990 = 98.3% of the real corpus), its DisMech-domain
@@ -75,9 +76,9 @@ statement.
 
 ## Active / queued work
 
-- **Queued, not started:** `ogar-dismech` OGAR-side classid collision
-  guard — see `.claude/plans/ogar-classid-registration-v1.md`. Mark this
-  line done when that plan's checklist is fully checked.
+- **Done 2026-08-17:** `ogar-dismech` OGAR-side classid collision guard
+  — https://github.com/AdaWorldAPI/OGAR/pull/274, merged. See
+  `.claude/plans/ogar-classid-registration-v1.md` (all items checked).
 - **Named goal, not yet built:** S3 sink-in to the shared `lance-graph`
   SoA table, "volume01" hot reload, q2-repository-pattern re-embedding,
   paging/SPOG routing. Today's output is a flat `.soa` blob plus a

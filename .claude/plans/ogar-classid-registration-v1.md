@@ -1,6 +1,9 @@
 # Plan: `ogar-classid-registration-v1`
 
-**Status:** ACTIVE — nothing checked off yet.
+**Status:** DONE — `ogar-dismech` merged into `AdaWorldAPI/OGAR` main
+(https://github.com/AdaWorldAPI/OGAR/pull/274, squash-merged
+2026-08-17). `0x0333` is now a compile-time collision-guarded
+reservation.
 **Repo touched:** `AdaWorldAPI/OGAR` (this is a cross-repo plan; the
 checklist items below run in OGAR, not in `dismech-rs`).
 **Owning repo for this doc:** `dismech-rs` (`.claude/plans/
@@ -33,27 +36,29 @@ HPO, Uberon, PATO, RO) don't require every consumer to depend on
 
 ## Checklist
 
-- [ ] Create a new tiny crate `ogar-dismech` in the OGAR workspace,
+- [x] Create a new tiny crate `ogar-dismech` in the OGAR workspace,
       mirroring `ogar-ro`'s footprint exactly (same crate layout, same
       minimal deps — likely just `ogar-obo` for the registry types to
       check against).
-- [ ] Add `pub const DISMECH_CONCEPT_ID: u16 = 0x0333;` to
+- [x] Add `pub const DISMECH_CONCEPT_ID: u16 = 0x0333;` to
       `ogar-dismech`.
-- [ ] Add a `concept_id_collision_guard` test module (mirroring
+- [x] Add a `concept_id_collision_guard` test module (mirroring
       `ogar-ro`'s own guard) that chains
       `OBO_CORE.specs().iter().chain(META_STUDY_SPINE.specs())` (and any
       other registered `0x03XX` spec sets that exist in OGAR at the time
       this is built) and asserts none claim `0x0333`.
-- [ ] Add a second test asserting `DISMECH_CONCEPT_ID` stays inside the
+- [x] Add a second test asserting `DISMECH_CONCEPT_ID` stays inside the
       `0x03` domain and clears both the documented private-consumer run
       (`0x0307`-`0x031D` live, `0x031F`/`0x0321` retired-not-reused) and
       the `META_STUDY_SPINE` band (`0x0340`-`0x0347`).
-- [ ] Add `ogar-dismech` to the OGAR workspace `Cargo.toml` members list.
-- [ ] Run `cargo test -p ogar-dismech -p ogar-obo -p ogar-ro` in the
+- [x] Add `ogar-dismech` to the OGAR workspace `Cargo.toml` members list.
+- [x] Run `cargo test -p ogar-dismech -p ogar-obo -p ogar-ro` in the
       OGAR workspace and confirm all guard tests pass green.
-- [ ] Open a PR in `AdaWorldAPI/OGAR` for the new crate.
-- [ ] Merge the OGAR PR once green.
-- [ ] Come back to `dismech-rs` and update `.claude/board/
+- [x] Open a PR in `AdaWorldAPI/OGAR` for the new crate.
+      → https://github.com/AdaWorldAPI/OGAR/pull/274
+- [x] Merge the OGAR PR once green.
+      → merged as commit `15c5dcb` on 2026-08-17.
+- [x] Come back to `dismech-rs` and update `.claude/board/
       LATEST_STATE.md`'s "Active / queued work" section and
       `TECH_DEBT.md`'s "OPEN — `0x0333` classid is not yet
       collision-guarded" entry to mark this done, with a pointer to the

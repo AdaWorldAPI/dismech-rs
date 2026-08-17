@@ -83,18 +83,18 @@ full real corpus: 1,990/1,990 files parsed, **zero parse errors**,
 
 ## Open questions — not yet decided
 
-- **Should `MedCare-rs`'s `crates/medcare-dismech`** (the earlier
-  hand-transcribed causal-graph resolver, built against Python source
-  citations that turned out to reference a file that doesn't exist in
-  the real upstream repo) **move here?** Recommended: yes, once this
-  repo's bake covers enough of the corpus to be a real replacement — but
-  NOT executed yet. That crate's resolver logic was built against an
-  unconfirmed Python source; before moving it, its behavior needs
-  re-grounding against what the real corpus (this repo's source of
-  truth) actually contains, not against citations to a file that isn't
-  there.
-- **`ogar-dismech`** — does not exist anywhere in OGAR (checked
-  2026-08-17). Nothing to move.
+- ~~Should `MedCare-rs`'s `crates/medcare-dismech` move here?~~
+  **Corrected 2026-08-17:** re-checked directly against the live
+  `MedCare-rs` checkout — no such crate exists anywhere in that repo
+  (`find -iname "*dismech*"` returns zero hits). This question was
+  carried forward from an earlier, apparently mistaken, session claim.
+  There is nothing to move and no decision pending. (See
+  `.claude/board/TECH_DEBT.md` for the full correction.)
+- **`ogar-dismech`** — exists now. Built and merged 2026-08-17:
+  https://github.com/AdaWorldAPI/OGAR/pull/274. It is the OGAR-side
+  compile-time collision guard for `0x0333` (mirrors `ogar-ro`'s
+  `RELATION_BODY_CONCEPT_ID` pattern) — nothing from this repo moved
+  into it; `dismech-bake` stays zero-dependency.
 - **S3 sink-in to the shared `lance-graph` SoA table, "volume01" hot
   reload, q2-repository-pattern re-embedding, paging/SPOG routing** —
   named goals, not yet built. This repo currently produces a flat
