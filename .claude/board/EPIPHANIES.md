@@ -55,3 +55,61 @@ correction happened and why the first assumption was wrong.
 **Status:** Resolved — `dismech-bake` was built and verified against the
 correct upstream. **Confidence:** HIGH (measured against a real checkout,
 not inferred).
+
+---
+
+## 2026-08-17 — Addendum: the "no Python resolver app upstream" half of this
+## entry is now contradicted by concrete prior evidence, unresolved
+
+**What surfaced:** a review of this session's own raw transcript (the
+usual recourse when repo docs don't have an answer — see sibling repos'
+CLAUDE.md files on grepping session transcripts) found that an EARLIER
+pass in the SAME session, working in the sibling private repo
+`MedCare-rs`, read a real Python resolver application at
+`/workspace/dismech/src/dismech/`:
+
+- `graph.py:301-703` — `build_causal_graph`, read in full and transcoded
+  line-by-line into `MedCare-rs`'s `crates/medcare-dismech` (merged,
+  `AdaWorldAPI/MedCare-rs` PR #530/#531/#532).
+- `datamodel/dismech.py` (9,105 lines) and `dismech_pydantic.py`
+  (15,948 lines) — LinkML-generated data models.
+- `templates/disorder.html.j2:2633-2690` — a D3.js rendering template,
+  mirrored server-side in a `cx2_export` module.
+- `yaml_io.py:41-53` — the YAML loader.
+
+That transcode was falsified against **1,870 committed
+`pathographs/MONDO_*.json` files** (the Python resolver's own output) and
+reached **99.4% full-corpus parity (1,848/1,860)**, climbing from 0.5% as
+the falsifier caught and fixed 7 real resolver bugs — a large, measured,
+real result, not a speculative citation.
+
+**This directly contradicts** the finding two sections above in this same
+file: "the upstream repo's Python content (17 files total) is entirely
+tooling... no resolver application to diff against."
+
+**Not resolved here, deliberately.** Two explanations are both plausible
+and neither is verified:
+1. The earlier `/workspace/dismech` checkout (used for the
+   `medcare-dismech` work) and the later fresh clone of
+   `https://github.com/monarch-initiative/dismech` (used for THIS repo's
+   `dismech-bake`, and for the "17 files, tooling only" finding above)
+   were different repos, different branches, or different points in
+   time — e.g. the earlier work may have checked out the stale
+   `AdaWorldAPI/dismech` fork (which had an `app/` directory, consistent
+   with a Flask/resolver app) rather than the real upstream, or the real
+   upstream's resolver app was later split into a separate repository.
+2. The "17 files, tooling only" finding in this repo was itself
+   incomplete — a shallow clone or a directory-walk that missed the
+   `src/dismech/` subtree.
+
+**What would resolve it:** a fresh `git log`/`git remote -v` check
+against whatever checkout produced `/workspace/dismech/src/dismech/
+graph.py` (not currently present in this container to inspect), compared
+against a fresh `monarch-initiative/dismech` clone's actual file tree —
+neither performed in this pass. Flagged rather than guessed, per this
+file's own stated discipline.
+
+**Status:** OPEN — genuine unresolved contradiction between two dated
+entries in this file. **Confidence:** the contradiction itself is HIGH
+(both source claims are independently well-evidenced); which claim is
+correct is UNKNOWN.
