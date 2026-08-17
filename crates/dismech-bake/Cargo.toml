@@ -1,0 +1,15 @@
+[package]
+name = "dismech-bake"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "DisMech disorder-corpus bake: monarch-initiative/dismech YAML -> a canon 512-byte SoA NodeRow buffer (key|edges|value LE), classid 0x0333, addressed by the SAME identity as the node's MONDO counterpart where one exists. Byte-layout contract only (no lance-graph-contract code dep), mirroring ogar-obo's own posture. Public CC-BY-derived reference; never patient data."
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+
+[[bin]]
+name = "dismech_bake"
+path = "src/bin/bake.rs"

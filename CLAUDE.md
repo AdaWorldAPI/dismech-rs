@@ -1,0 +1,115 @@
+# CLAUDE.md — dismech-rs
+
+## What this is
+
+A **public, agnostic** transcode of `monarch-initiative/dismech` (disease
+mechanisms — disorder identity, phenotype, treatment, biochemical, and
+genetic knowledge base) into a Rust-native SoA bake, sunk into the same
+`lance-graph` NodeRow substrate the OGAR OBO-core bake (`ogar-obo`) already
+uses. The goal, verbatim from the operator: *"agnostic public surface for
+medical as an open medical patterns proxy for the private MedCare-rs."*
+
+`dismech-rs` never carries patient data. It is the public medical-knowledge
+layer; `AdaWorldAPI/MedCare-rs` (private) is the consumer that layers real
+patient context on top — the same public/private split this workspace
+already uses for `ogar-obo`/`ogar-fma` (public reference) vs `MedCare-rs`
+(private patient application).
+
+## Source — read this before re-cloning anything
+
+**Source is `https://github.com/monarch-initiative/dismech`** — the real
+upstream, Apache-2.0/CC-BY reference content, no PHI.
+
+**`AdaWorldAPI/dismech` (the fork) is STALE on its default branch and
+carries NO `kb/` corpus directory at all** — confirmed 2026-08-17 via a
+fresh shallow clone (`app/`, `cache/`, `data/`, `docs/`, `attic/`,
+`dashboard/` only, no disorder YAML anywhere). Do not clone the fork
+expecting the corpus. If the fork is ever needed again (e.g. to sync a
+divergent branch), check its branch list first — the default branch alone
+is not the corpus.
+
+The real corpus: `kb/disorders/*.yaml` (1,990 files as of 2026-08-17),
+plus sibling `kb/{comorbidities,groupings,hypotheses,modules,
+surrogate_endpoints}/` this repo does not yet consume.
+
+**There is no separate Python resolver application anywhere in the
+upstream repo** (no `graph.py`, no `build_causal_graph`, no
+`pathograph_export.py`) — only 17 Python files, all tooling (GH Action
+helpers, LinkML QC, a disease-trajectory extraction skill). So "100%
+truthful transcode" here means reading exactly what the YAML declares
+against its own field names — there is no behavioral parity oracle to
+build toward (no Python app to diff against), only the corpus's own
+declared shape.
+
+## Classid — `0x0333`
+
+Reserved concept slot in the shared `0x03` OGAR "Ontology" domain, one
+slot family past RO's relation-body concept (`0x0306`). Measured unused
+anywhere in `AdaWorldAPI/OGAR` on 2026-08-17 (`grep -rn "0x0333"` across
+every crate, zero hits before this reservation). `classid = (0x0333 << 16)
+| app_prefix`, the same canon-high idiom every OGAR-addressed domain uses.
+
+**Mirrored addressing is the whole point.** Where a disorder resolves to a
+`MONDO:<num>` xref (measured: 1,957/1,990 = 98.3% of the real corpus),
+its DisMech-domain `identity` is set to that SAME numeric — not a fresh
+ordinal. A DisMech row and its MONDO row then differ ONLY in `classid`;
+`unpack_key` on either yields the identical `identity`. This is the
+pre-bake join the earlier `MedCare-rs` SPOG-unification discussion
+(`docs/DISMECH_BAKE_PLAN.md` §13-15) was working toward by hand — here
+it's the address scheme itself, not a lookup table. The remaining 1.7%
+(33 disorders with no resolvable MONDO xref) get an honest fallback
+ordinal from a disjoint band (`0x0080_0000+`), flagged in-row
+(`pack.rs`'s `mondo_mirrored` byte) so a reader never mistakes a fallback
+address for a real cross-domain join key.
+
+## Byte layout — a contract, not a code dependency
+
+`crates/dismech-bake` depends on nothing from `lance-graph-contract` or
+`ogar-obo` — it mirrors `ogar-obo`'s own posture exactly (see that
+crate's own doc comment: "The loader connection is a BYTE-LAYOUT
+contract, not a code dep"). The 512-byte `NodeRow` shape (`key(16) |
+edges(16) | value(480)`) is replicated locally in `pack.rs`, byte-for-byte
+compatible with what `lance-graph`'s `node_rows_from_le_bytes` reads back
+as `&[NodeRow]` zero-copy.
+
+## Current scope — disorder IDENTITY only
+
+`crates/dismech-bake` bakes `name` / `description` / `category` / the
+MONDO xref. It does NOT yet bake the causal-mechanism graph (treatments,
+phenotype edges, gene associations) — that is real, substantial follow-on
+work, deliberately not attempted in this first pass. Verified against the
+full real corpus: 1,990/1,990 files parsed, **zero parse errors**,
+98.3% MONDO-resolution.
+
+## Open questions — not yet decided
+
+- **Should `MedCare-rs`'s `crates/medcare-dismech`** (the earlier
+  hand-transcribed causal-graph resolver, built against Python source
+  citations that turned out to reference a file that doesn't exist in
+  the real upstream repo) **move here?** Recommended: yes, once this
+  repo's bake covers enough of the corpus to be a real replacement — but
+  NOT executed yet. That crate's resolver logic was built against an
+  unconfirmed Python source; before moving it, its behavior needs
+  re-grounding against what the real corpus (this repo's source of
+  truth) actually contains, not against citations to a file that isn't
+  there.
+- **`ogar-dismech`** — does not exist anywhere in OGAR (checked
+  2026-08-17). Nothing to move.
+- **S3 sink-in to the shared `lance-graph` SoA table, "volume01" hot
+  reload, q2-repository-pattern re-embedding, paging/SPOG routing** —
+  named goals, not yet built. This repo currently produces a flat
+  `.soa` blob (`dismech_bake --out rows.soa`) and a round-trip-verified
+  S3 upload script (`scripts/upload-bake.sh`, byte-identical method to
+  `MedCare-rs`'s own). The Lance-table sink-in and hot-reload path are
+  the next phase.
+
+## Commands
+
+```bash
+# Bake against a real monarch-initiative/dismech checkout:
+cargo run --release --bin dismech_bake -- /path/to/dismech --out rows.soa
+
+# Upload a bake (needs AWS_ENDPOINT_URL / AWS_S3_BUCKET_NAME /
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY):
+scripts/upload-bake.sh <tag> rows.soa
+```
