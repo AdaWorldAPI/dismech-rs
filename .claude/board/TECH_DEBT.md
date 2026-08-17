@@ -55,18 +55,42 @@ are named goals only.
 
 ---
 
-## ~~OPEN — `MedCare-rs`'s `medcare-dismech` crate: move-or-not undecided~~ CORRECTED 2026-08-17
+## ~~OPEN — `MedCare-rs`'s `medcare-dismech` crate: move-or-not undecided~~ CORRECTED 2026-08-17, THEN RE-CORRECTED 2026-08-17
 
-**Dated:** 2026-08-17 (opened and corrected same day)
+**Dated:** 2026-08-17 (opened, "corrected" same day, then re-corrected
+same day — see below)
 
-**What this entry claimed:** that `MedCare-rs` has an earlier
+**What this entry originally claimed:** that `MedCare-rs` has an earlier
 hand-transcribed causal-graph resolver crate (`crates/medcare-dismech`)
 that might need moving here.
 
-**Correction:** re-checked directly against the live `MedCare-rs`
-checkout — `find /home/user/MedCare-rs -iname "*dismech*"` returns zero
-hits, in both `crates/` and the whole tree. No such crate exists. This
-entry (and the matching line in `CLAUDE.md`'s "Open questions") was
-carried forward from an earlier, apparently mistaken, session claim —
-struck here rather than deleted per this repo's TECH_DEBT convention.
-There is nothing to move and no decision pending.
+**First "correction" (WRONG — do not trust):** claimed the crate does
+not exist, based on `find /home/user/MedCare-rs -iname "*dismech*"`
+returning zero hits. That check ran against a local `MedCare-rs`
+checkout that was, at the time, 193 commits behind `origin/main` — on a
+stale branch (`claude/posten-3-stacking`) left over from earlier
+investigation in the same session. The check never touched the crate's
+real state; it produced a confident-sounding negative from stale data.
+
+**Re-correction (current, verified against a fresh sync to
+`origin/main`):** `crates/medcare-dismech` IS real — 5 modules
+(`lib.rs`/`model.rs`/`identity.rs`/`graph.rs`/`parity.rs`) + 4 binaries,
+~2,000 lines, a genuine from-scratch Rust transcode of the Python
+DisMech resolver's `graph.py::build_causal_graph`, with a `parity.rs`
+oracle diffing output against 1,870 committed `pathographs/MONDO_*.json`
+files. See `CLAUDE.md` "Open questions" for the full re-corrected entry
+and its explicit boundary (this repo did not re-verify whether that
+parity gate is currently green — that's `MedCare-rs`'s own thing to
+confirm).
+
+**Standing lesson, not just for this one fact:** a "zero hits" result
+from a filesystem search is only as good as the checkout it ran
+against. Verify `git status -sb` / branch-vs-`origin/HEAD` divergence
+BEFORE trusting a negative finding, especially one about to be written
+into a different, public repository.
+
+**Move-or-not decision:** still genuinely undecided — not this repo's
+call to make unilaterally. Tracked as a live open question in
+`CLAUDE.md`, not re-opened as a separate TECH_DEBT row (the crate's
+existence is now settled; the move decision was never this entry's
+subject).
