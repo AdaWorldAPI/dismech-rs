@@ -32,14 +32,29 @@ The real corpus: `kb/disorders/*.yaml` (1,990 files as of 2026-08-17),
 plus sibling `kb/{comorbidities,groupings,hypotheses,modules,
 surrogate_endpoints}/` this repo does not yet consume.
 
-**There is no separate Python resolver application anywhere in the
-upstream repo** (no `graph.py`, no `build_causal_graph`, no
-`pathograph_export.py`) — only 17 Python files, all tooling (GH Action
-helpers, LinkML QC, a disease-trajectory extraction skill). So "100%
-truthful transcode" here means reading exactly what the YAML declares
-against its own field names — there is no behavioral parity oracle to
-build toward (no Python app to diff against), only the corpus's own
-declared shape.
+**⊘ CONTRADICTED, unresolved — do not trust either direction without a
+fresh check (2026-08-17).** This section previously stated flatly that
+no Python resolver application exists upstream. That claim is now
+contradicted by concrete evidence found in this session's own transcript:
+a real Python resolver was read in full at `/workspace/dismech/src/
+dismech/graph.py:301-703` (`build_causal_graph`), with a working
+`crates/medcare-dismech` transcode in the sibling private repo
+`MedCare-rs` (merged PRs #530/#531/#532) achieving **99.4% full-corpus
+parity (1,848/1,860)** against 1,870 committed `pathographs/MONDO_*.json`
+oracle files — the Python resolver's own output.
+
+Neither claim is currently re-verified in THIS repo's checkout. Two
+plausible explanations, neither confirmed: the earlier `MedCare-rs` work
+may have checked a different source (possibly the stale
+`AdaWorldAPI/dismech` fork, which — unlike a bare corpus clone — DOES
+have an `app/` directory, consistent with a resolver application, before
+this repo's own shallow-clone check found it stripped of `kb/`); or this
+repo's "17 files, tooling only" finding was itself based on an
+incomplete look at the real upstream. **Before scoping any future
+`dismech-bake` work as "no oracle to build toward," re-verify against a
+fresh, deep clone of `https://github.com/monarch-initiative/dismech`
+specifically for `src/dismech/graph.py` and siblings.** Full context:
+`.claude/board/EPIPHANIES.md`'s 2026-08-17 addendum entry.
 
 ## Classid — `0x0333`
 
