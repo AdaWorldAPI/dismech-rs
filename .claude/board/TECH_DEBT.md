@@ -29,18 +29,76 @@ entirely on the OGAR (authority) side. Full checklist:
 
 ---
 
-## OPEN — causal-mechanism graph not yet baked
+## ~~OPEN — causal-mechanism graph not yet baked~~ RESOLVED (resolver) / OPEN (SoA packing), 2026-08-18
 
-**Dated:** 2026-08-17
+**Dated:** 2026-08-17, updated 2026-08-18
 
-**What:** Only disorder identity (name/description/category/MONDO xref)
-is baked. Treatments, phenotype edges, gene associations, and the
+**What it was:** Only disorder identity (name/description/category/MONDO
+xref) was baked. Treatments, phenotype edges, gene associations, and the
 sibling `kb/{comorbidities,groupings,hypotheses,modules,
-surrogate_endpoints}/` directories are unconsumed.
+surrogate_endpoints}/` directories were unconsumed.
 
-**Why it's deferred, not a bug:** deliberate first-pass scoping per
-`CLAUDE.md` "Current scope" — the identity bake was verified complete
-(1,990/1,990 parsed, 0 errors) before attempting the larger graph.
+**Resolved 2026-08-18 — the resolver.** `crates/dismech-bake/src/graph.rs`
+is a direct, line-for-line port of the real upstream
+`src/dismech/graph.py::build_causal_graph` (read in full from a fresh
+`/tmp/dismech-up` checkout, not paraphrased) — every node-admission rule
+across the 8 sections + `animal_models` + disease/gene-nested `variants`,
+every one of the 8 edge-collecting passes (pathophysiology `downstream`,
+phenotype `sequelae`, environmental `influences_mechanisms`, treatment
+`target_mechanisms`+`target_phenotypes`, the 3 `modeled_mechanisms`
+passes, biochemical `readouts`, phenotype `reports_on`, genetic
+gene-key-matched `contributes_to`, and variant `variant_of`/
+`contributes_to`), and the full gene-key-matching helper family
+(`_gene_lookup_keys`, `_descriptor_lookup_keys`, `_name_lookup_key`,
+`_genetic_item_infers_mechanism_edges`, `_build_section_lookup`,
+`_resolve_descriptor_target`, `iter_variant_items`,
+`animal_model_label`). Falsified via `bin/census.rs` against the full
+real corpus (`/tmp/dismech-up`, 1,996 files): **diseases 1995** (exact
+match to `MedCare-rs`'s own measurement on the same corpus family),
+**total edges 33,458** (vs. MedCare-rs's 33,328 — 0.4% apart, plausibly
+snapshot drift between the two corpus pulls, not a resolver
+discrepancy). `model.rs` also gained a permissive, untyped-first
+`NodeItem` layer (+ `CausalEdgeRaw`/`EnvironmentalEdgeRaw`/
+`TargetEdgeRaw`/`ReadoutEdgeRaw`/`ModelEdgeRaw`/`EvidenceItemRaw`, and a
+`de_string_or_list` deserializer for the corpus's real scalar-or-list
+gotcha, verified against `subtypes:` occurring both ways in real data) —
+additive, not consumed by `graph.rs` itself (see that module's doc
+comment for why: `graph.py`'s own dynamic dict-walk doesn't reduce
+cleanly to a fixed struct tree without losing fidelity).
+
+**Still OPEN — SoA packing.** `graph::build_causal_graph`'s output is
+NOT wired into `pack.rs`'s 512-byte `NodeRow`. This was a deliberate
+stop, not an oversight: `pack.rs`'s value slab is a fixed 480 bytes and
+the edge block is a fixed 16 bytes (`pack.rs`'s own module doc: "1
+byte/predicate slot", i.e. up to 16 predicate slots) — but one disorder
+can carry an UNBOUNDED number of causal edges across 7 edge-list fields
+(a single real file can have dozens of `downstream`/`readouts`/
+`target_mechanisms` entries; the corpus-wide census above found up to
+tens of edges per disorder in the dense cases). Byte-layout decisions
+this needs, all requiring an explicit call rather than a guess:
+
+1. **Row-per-disorder vs. row-per-edge.** The current `NodeRow` is one
+   row per disorder (identity). Mechanism-graph nodes/edges could be (a)
+   additional `NodeRow`s per graph node/edge (own classid slot(s), own
+   addressing scheme), or (b) an out-of-line side table keyed by the
+   disorder's row identity (mirroring the existing label-lane pattern
+   `bake.rs`/`pack.rs` already use for `name`/`description` text).
+2. **Edge count is unbounded per disorder** — no fixed in-row byte
+   budget can hold it. Whatever the row shape, edges almost certainly
+   need to live in an out-of-line lane (a flat edge-list blob, indexed
+   by disorder identity + offset/count), not packed into the 16-byte
+   edge block that today holds simple predicate-slot bytes for a very
+   different (bounded-cardinality) use case.
+3. **classid scheme for graph nodes.** Does a `NodeType::Pathophysiology`
+   node get its own reserved OGAR concept slot (parallel to `0x0333`
+   for the disorder itself), or does it live entirely in the
+   out-of-line lane with no independent classid at all (since,
+   structurally, these are sub-parts of a disorder, not first-class
+   ontology entities with their own cross-domain identity)?
+
+None of these are this session's call — flagged here per this repo's
+own "stop and report, don't guess" discipline, same posture as the
+resolved classid-collision entry above.
 
 ---
 

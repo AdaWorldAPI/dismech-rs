@@ -15,6 +15,35 @@
 
 ---
 
+## 2026-08-18 — F4: causal-mechanism graph resolver ported (`graph.rs`)
+
+**Did:** Extended `dismech-bake` with `crates/dismech-bake/src/graph.rs`
+(`build_causal_graph`, a direct port of the real upstream
+`src/dismech/graph.py::build_causal_graph`, read in full from
+`/tmp/dismech-up/src/dismech/graph.py`), `bin/census.rs`
+(`dismech_census`, the falsifier binary), and a `NodeItem` typed-model
+extension in `model.rs` (+ `de_string_or_list` for the corpus's real
+scalar-or-list gotcha). `lib.rs` doc comment corrected to match the
+already-resolved 2026-08-18 EPIPHANIES finding.
+
+**Verified:**
+- `cargo test -p dismech-bake`: 22/22 passing (13 pre-existing + 9 new,
+  all against real-corpus-derived fixtures, none synthetic).
+- `cargo clippy -p dismech-bake --all-targets -- -D warnings`: clean.
+- `cargo fmt -p dismech-bake`: clean, no diff.
+- `dismech_census /tmp/dismech-up` (full real corpus, 1,996 files, 0
+  parse errors): **1995 diseases**, **33,458 total edges** — vs.
+  `MedCare-rs`'s own 1995/33,328 measurement on the same corpus family:
+  exact match on disease count, 0.4% apart on edge count.
+
+**Outcome:** Resolver + typed model layer landed. SoA packing (`pack.rs`)
+deliberately NOT touched — flagged as a genuine byte-layout decision in
+`TECH_DEBT.md`, not guessed at. Full account:
+`.claude/board/EPIPHANIES.md` (2026-08-18, "The causal-mechanism graph
+resolver, ported directly against the real Python (F4)").
+
+---
+
 ## 2026-08-17 — Repo creation + full bake verification
 
 **What:** Created `dismech-rs` as a new public repo — a pure-Rust
