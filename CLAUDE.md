@@ -32,29 +32,43 @@ The real corpus: `kb/disorders/*.yaml` (1,990 files as of 2026-08-17),
 plus sibling `kb/{comorbidities,groupings,hypotheses,modules,
 surrogate_endpoints}/` this repo does not yet consume.
 
-**⊘ CONTRADICTED, unresolved — do not trust either direction without a
-fresh check (2026-08-17).** This section previously stated flatly that
-no Python resolver application exists upstream. That claim is now
-contradicted by concrete evidence found in this session's own transcript:
-a real Python resolver was read in full at `/workspace/dismech/src/
-dismech/graph.py:301-703` (`build_causal_graph`), with a working
-`crates/medcare-dismech` transcode in the sibling private repo
-`MedCare-rs` (merged PRs #530/#531/#532) achieving **99.4% full-corpus
-parity (1,848/1,860)** against 1,870 committed `pathographs/MONDO_*.json`
-oracle files — the Python resolver's own output.
+**✓ RESOLVED (2026-08-18) — the Python resolver exists upstream. The
+"17 files, tooling only" finding was wrong.** Re-verified against a fresh
+`--depth 1` clone of `https://github.com/monarch-initiative/dismech`
+(commit range current as of 2026-08-18), independent of any prior
+checkout:
 
-Neither claim is currently re-verified in THIS repo's checkout. Two
-plausible explanations, neither confirmed: the earlier `MedCare-rs` work
-may have checked a different source (possibly the stale
-`AdaWorldAPI/dismech` fork, which — unlike a bare corpus clone — DOES
-have an `app/` directory, consistent with a resolver application, before
-this repo's own shallow-clone check found it stripped of `kb/`); or this
-repo's "17 files, tooling only" finding was itself based on an
-incomplete look at the real upstream. **Before scoping any future
-`dismech-bake` work as "no oracle to build toward," re-verify against a
-fresh, deep clone of `https://github.com/monarch-initiative/dismech`
-specifically for `src/dismech/graph.py` and siblings.** Full context:
-`.claude/board/EPIPHANIES.md`'s 2026-08-17 addendum entry.
+- `src/dismech/graph.py:301` — `def build_causal_graph(disorder: dict[str,
+  Any]) -> CausalGraph:` — present, real.
+- `find . -name '*.py' -not -path './.git/*' | wc -l` → **323** Python
+  files repo-wide (**84** under `src/dismech/` alone) — not 17. Whatever
+  produced the "17 files total" count looked at an incomplete slice of
+  the upstream tree, not the real repository.
+- `pathographs/MONDO_*.json` → **1,903** files — the oracle exists,
+  committed, publicly, exactly where `MedCare-rs`'s `crates/medcare-dismech`
+  says it does. It is not of unknown provenance.
+- `src/dismech/export/sepio_export.py` exports SEPIO-shaped RDF using
+  `dismech:`-namespaced predicate CURIEs (`dismech:has_pathophysiology`,
+  `dismech:causally_upstream_of`) — confirming both that a resolver
+  application exists AND that DisMech names its own relations in its own
+  CURIE namespace rather than RO's (relevant precedent for
+  `ogar-dismech`'s predicate mint, OGAR PR #275).
+
+So: `MedCare-rs`'s citation of `graph.py::build_causal_graph` was correct;
+this repo's own EPIPHANIES entry claiming "no resolver application" was
+the incomplete finding. Correction recorded in
+`.claude/board/EPIPHANIES.md` (new dated entry, per this repo's
+append-only convention — the original entry is not edited, only its
+Status/Confidence lines).
+
+**Consequence for `dismech-bake`'s scope, going forward:** "no oracle to
+build toward" (`crates/dismech-bake/src/model.rs:4-8`) is no longer an
+accurate premise. A behavioral-parity transcode of `build_causal_graph`
+IS possible against the real oracle — it is simply not what this crate's
+first vertical slice (disorder identity only) attempts. Whether to extend
+`dismech-bake` toward mechanism-graph parity is a separate, not-yet-made
+decision; see the companion plan in `MedCare-rs`
+(`.claude/plans/dismech-mechanism-bake-v1.md`, F3/F4).
 
 ## Classid — `0x0333`
 
