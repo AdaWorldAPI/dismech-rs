@@ -4,10 +4,16 @@
 //! only (`name`, `description`, `category`, the MONDO xref) -- not the
 //! causal-mechanism graph. `monarch-initiative/dismech` (the real upstream;
 //! the `AdaWorldAPI/dismech` fork's default branch is STALE and carries no
-//! `kb/` corpus at all -- confirmed 2026-08-17, do not clone the fork) ships
-//! no separate resolver application, only this LinkML-schema'd YAML corpus.
-//! So "100% truthful transcode" here means: read exactly what the YAML
-//! declares, against the schema's own field names, inventing nothing.
+//! `kb/` corpus at all -- confirmed 2026-08-17, do not clone the fork) DOES
+//! ship a real Python resolver application (`src/dismech/graph.py::
+//! build_causal_graph`, falsified against 1,903 committed
+//! `pathographs/MONDO_*.json` oracle files) -- an earlier "no separate
+//! resolver application, tooling only" claim here and in EPIPHANIES.md was
+//! wrong, based on an incomplete look at the upstream tree; corrected
+//! 2026-08-18, see `.claude/board/EPIPHANIES.md`. This crate's narrow scope
+//! (identity only, no mechanism graph) stands regardless -- it was never
+//! justified by "no oracle exists," and a mechanism-graph parity transcode
+//! against the real resolver remains a separate, not-yet-made decision.
 
 use serde::Deserialize;
 

@@ -1,3 +1,54 @@
+## 2026-08-18 — RESOLVED: the resolver contradiction. `medcare-dismech` was right; "17 files, tooling only" was wrong.
+
+**Finding:** The 2026-08-17 contradiction between (a) this repo's own
+"the upstream repo's Python content (17 files total) is entirely
+tooling ... no resolver application to diff against" and (b) the private
+sibling `MedCare-rs`'s `crates/medcare-dismech` citing a working
+`src/dismech/graph.py::build_causal_graph` falsified against 1,870
+pathographs — is resolved. **(b) is correct. (a) is wrong.**
+
+Re-verified this session against a fresh, independent `--depth 1` clone
+of `https://github.com/monarch-initiative/dismech`, from scratch, with no
+input from either prior claim:
+
+| check | result |
+|---|---|
+| `src/dismech/graph.py:301` `def build_causal_graph(...)` | **present** |
+| Python files repo-wide (`find . -name '*.py' \| wc -l`) | **323** |
+| Python files under `src/dismech/` alone | **84** |
+| `pathographs/MONDO_*.json` | **1,903** files |
+| `"RO:` literals anywhere in `src/` | **1** (data, not a predicate) |
+| `src/dismech/export/sepio_export.py` predicate CURIEs | `dismech:has_pathophysiology`, `dismech:causally_upstream_of` — DisMech's own namespace, not RO's |
+
+**Root cause of the wrong claim:** whatever produced "17 files total" for
+"the upstream repo's Python content" looked at an incomplete slice of the
+tree — nowhere near the real 323 (or even the 84 under `src/dismech/`
+alone). The fork-vs-upstream source correction in the entry above this one
+is unaffected and still correct; only the *second*, nested claim in that
+same entry ("ships no separate resolver application") was wrong.
+
+**Consequence:**
+- `crates/dismech-bake/src/model.rs`'s doc comment corrected (this repo,
+  same session) — no longer asserts "no separate resolver application."
+- `CLAUDE.md`'s "⊘ CONTRADICTED, unresolved" section rewritten to
+  "✓ RESOLVED" with this entry's measurements.
+- The 99.4% (1,848/1,860) parity figure in `MedCare-rs` remains a
+  *historical* result — measured against an earlier, smaller pathograph
+  snapshot (1,860) than the current 1,903. Re-running it against the
+  current snapshot is a separate task, tracked in `MedCare-rs`'s
+  `.claude/plans/dismech-mechanism-bake-v1.md` (F0).
+- `dismech-bake`'s narrow identity-only scope (§ model.rs) is unaffected
+  by this correction — it was never justified by "no oracle exists," so
+  nothing about this crate's current behavior needs to change. Whether to
+  extend it toward mechanism-graph parity against the now-confirmed
+  resolver is a separate, not-yet-made decision.
+
+**Status:** RESOLVED. **Confidence:** HIGH — measured against a fresh,
+independent clone; every number above is directly reproducible with the
+commands shown.
+
+---
+
 # EPIPHANIES.md — dismech-rs
 
 > **APPEND-ONLY.** Dated findings, corrections, and "aha" moments.
@@ -52,9 +103,13 @@ files) exists to catch. Recording it here, dated, is the honest trail —
 not just the corrected end-state in `CLAUDE.md`, but the fact that a
 correction happened and why the first assumption was wrong.
 
-**Status:** Resolved — `dismech-bake` was built and verified against the
-correct upstream. **Confidence:** HIGH (measured against a real checkout,
-not inferred).
+**Status:** Resolved (fork-vs-upstream half) — `dismech-bake` was built and
+verified against the correct upstream. **PARTIALLY SUPERSEDED 2026-08-18:**
+the second correction in this entry ("no separate resolver application ...
+17 files total ... no resolver application to diff against") was itself
+wrong — see the 2026-08-18 entry below. **Confidence:** HIGH on the
+fork-vs-upstream source correction (measured, unaffected); the "no
+resolver" claim is now LOW/false, not HIGH.
 
 ---
 
@@ -109,7 +164,9 @@ against a fresh `monarch-initiative/dismech` clone's actual file tree —
 neither performed in this pass. Flagged rather than guessed, per this
 file's own stated discipline.
 
-**Status:** OPEN — genuine unresolved contradiction between two dated
-entries in this file. **Confidence:** the contradiction itself is HIGH
-(both source claims are independently well-evidenced); which claim is
-correct is UNKNOWN.
+**Status:** RESOLVED 2026-08-18 — see the new entry below. The
+`medcare-dismech` claim (resolver exists, `graph.py::build_causal_graph`,
+1,903 pathograph oracle) was correct. The "17 files, tooling only" claim
+was the incomplete one — explanation 2 above is what happened.
+**Confidence:** HIGH (re-verified against a fresh, independent clone of
+the real upstream, full file-tree count and grep, not inferred).
