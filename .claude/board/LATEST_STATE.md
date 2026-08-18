@@ -27,6 +27,15 @@ byte-packer + `DISMECH_CONCEPT` constant), `bake.rs` (227 lines, the
 directory-walk + parse + pack driver + `dismech_bake` binary). 13 unit
 tests, all green at `b91d6a1`.
 
+**Updated 2026-08-18:** `model.rs` gained a permissive `NodeItem`
+causal-mechanism-graph typed layer (edge raw structs +
+`de_string_or_list`); a new `graph.rs` is a direct port of the real
+upstream `src/dismech/graph.py::build_causal_graph`; a new
+`bin/census.rs` (`dismech_census`) falsifies it against the full corpus.
+22 unit tests green. See the resolved half of "OPEN — causal-mechanism
+graph not yet baked" in `TECH_DEBT.md` for the full account, including
+what's still open (SoA packing).
+
 ## Classid reservation — `0x0333`
 
 `DISMECH_CONCEPT: u16 = 0x0333` (`crates/dismech-bake/src/pack.rs:36`).
@@ -67,9 +76,21 @@ Run against a real `monarch-initiative/dismech` checkout:
 
 ## Scope — what's baked, what's not
 
-Currently baked: disorder **identity only** — `name` / `description` /
-`category` / the MONDO xref. **Not yet baked**: the causal-mechanism
-graph (treatments, phenotype edges, gene associations), nor the sibling
+Baked into the SoA `NodeRow`: disorder **identity only** — `name` /
+`description` / `category` / the MONDO xref.
+
+**Resolved (in-memory, not yet packed) 2026-08-18:** the causal-mechanism
+graph — `graph::build_causal_graph` resolves the full node/edge graph
+(pathophysiology, phenotypes, environmental, genetic, treatments,
+biochemical, experimental/animal/computational models, variants) from a
+parsed `Disorder`, ported directly from the real upstream
+`graph.py::build_causal_graph`, census-verified against the full corpus
+(diseases 1995, edges 33,458 — within 0.4% of `MedCare-rs`'s own
+33,328 on the same corpus family). It is NOT yet wired into `pack.rs`'s
+SoA row output — see `TECH_DEBT.md` for the specific byte-layout
+decisions that blocks on.
+
+Still entirely unconsumed: the sibling
 `kb/{comorbidities,groupings,hypotheses,modules,surrogate_endpoints}/`
 directories. See `CLAUDE.md` "Current scope" section for the full
 statement.

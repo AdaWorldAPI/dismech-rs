@@ -17,15 +17,33 @@
 //! `dashboard/` only). Do not clone the fork expecting the corpus; use the
 //! monarch-initiative original.
 //!
-//! ## Scope of this first slice
+//! ## Scope
 //!
-//! Disorder IDENTITY only — `name` / `description` / `category` / the
-//! MONDO xref. Not the causal-mechanism graph: the corpus ships no
-//! separate resolver application to transcode against (no `graph.py`
-//! exists anywhere in the upstream repo), so there is no behavioral
-//! parity oracle to build toward yet — only the YAML's own declared
-//! shape, read truthfully.
+//! Two layers, both real now (corrected 2026-08-18 — see
+//! `.claude/board/EPIPHANIES.md`; the upstream repo DOES ship a real
+//! Python resolver, `src/dismech/graph.py::build_causal_graph`, falsified
+//! against 1,903 committed `pathographs/MONDO_*.json` oracle files — an
+//! earlier claim that no such resolver exists was wrong):
+//!
+//! 1. **Disorder identity** (`bake::bake_disorders`, `pack::pack_row`) —
+//!    `name` / `description` / `category` / the MONDO xref, packed into
+//!    the 512-byte SoA `NodeRow`.
+//! 2. **The causal-mechanism graph** (`graph::build_causal_graph`) — a
+//!    direct port of the real upstream Python resolver: node admission
+//!    across `pathophysiology` / `phenotypes` / `environmental` /
+//!    `genetic` / `treatments` / `biochemical` / `experimental_models` /
+//!    `computational_models` / `animal_models`, and every edge type it
+//!    produces (`downstream`, `sequelae`, `influences_mechanisms`,
+//!    `target_mechanisms`, `target_phenotypes`, `readouts`, `reports_on`,
+//!    `modeled_mechanisms`, genetic gene-key inference, variant edges).
+//!    See `graph.rs`'s own module doc comment for the full port contract.
+//!    **Not yet wired into `pack.rs`'s SoA row output** — the 512-byte
+//!    row's 16-byte edge block cannot obviously hold an unbounded number
+//!    of causal edges per disorder across 7 edge-list fields; that byte-
+//!    layout decision needs an explicit call, not a guess, and is
+//!    deliberately left open (see `.claude/board/TECH_DEBT.md`).
 
 pub mod bake;
+pub mod graph;
 pub mod model;
 pub mod pack;

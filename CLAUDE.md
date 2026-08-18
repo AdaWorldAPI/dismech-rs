@@ -101,14 +101,26 @@ edges(16) | value(480)`) is replicated locally in `pack.rs`, byte-for-byte
 compatible with what `lance-graph`'s `node_rows_from_le_bytes` reads back
 as `&[NodeRow]` zero-copy.
 
-## Current scope — disorder IDENTITY only
+## Current scope
 
-`crates/dismech-bake` bakes `name` / `description` / `category` / the
-MONDO xref. It does NOT yet bake the causal-mechanism graph (treatments,
-phenotype edges, gene associations) — that is real, substantial follow-on
-work, deliberately not attempted in this first pass. Verified against the
-full real corpus: 1,990/1,990 files parsed, **zero parse errors**,
+`crates/dismech-bake` bakes disorder **identity** (`name` / `description`
+/ `category` / the MONDO xref) into the SoA `NodeRow`. Verified against
+the full real corpus: 1,990/1,990 files parsed, **zero parse errors**,
 98.3% MONDO-resolution.
+
+**Causal-mechanism-graph resolver — done, not yet packed (2026-08-18).**
+`graph::build_causal_graph` is a direct port of the real upstream
+`src/dismech/graph.py::build_causal_graph`, resolving the full node/edge
+graph (pathophysiology, phenotypes, environmental, genetic, treatments,
+biochemical, experimental/animal/computational models, variants) from a
+parsed disorder document. Falsified via `dismech_census` against the
+full real corpus: **1995 diseases**, **33,458 total edges** — within
+0.4% of the private `MedCare-rs`'s own `medcare-dismech` measurement
+(33,328) on the same corpus family. It is NOT yet wired into `pack.rs`'s
+512-byte `NodeRow` — the 480-byte value slab / 16-byte edge block can't
+obviously hold an unbounded per-disorder edge count, and that byte-layout
+call is deliberately left open; see `.claude/board/TECH_DEBT.md` for the
+specific decisions it blocks on.
 
 ## Open questions — not yet decided
 

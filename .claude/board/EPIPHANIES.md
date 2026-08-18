@@ -1,3 +1,83 @@
+## 2026-08-18 — The causal-mechanism graph resolver, ported directly against the real Python (F4)
+
+**What happened:** F4 of the `MedCare-rs`-authored transcode plan asked
+this repo to extend `dismech-bake` from disorder identity to the
+causal-mechanism graph, porting from a private sibling's
+`medcare-dismech::graph::build_causal_graph` (described in the brief as
+a field-for-field port of the upstream Python). Rather than port from a
+description of a port, this session went one hop further: the real
+upstream `src/dismech/graph.py` was ALREADY present in full at
+`/tmp/dismech-up/src/dismech/graph.py` (part of the pre-staged corpus
+checkout), so `crates/dismech-bake/src/graph.rs` is a direct,
+line-cited port against that file, not a paraphrase of a paraphrase.
+
+**What the brief's high-level shape got right vs. missed:** the section
+list (8 sections + `animal_models`), the general edge-list field names
+(`downstream`/`sequelae`/`influences_mechanisms`/`target_mechanisms`/
+`readouts`/`reports_on`/`modeled_mechanisms`), and the `conforms_to`
+scalar-or-list warning (verified real, though observed in this corpus
+snapshot only for `subtypes`, not `conforms_to` itself) were all
+accurate. What the brief's summary-level `Edge`/`NodeInfo` shape did NOT
+capture, found only by reading the real Python in full:
+
+- Treatments produce edges from **two independent sources**:
+  `target_mechanisms[]` (bare `targets` edges, no other field populated)
+  AND `target_phenotypes[]` (resolved by descriptor match against a
+  phenotype name/term lookup, `treats` edges) — the brief's shape
+  implied only one treatment edge kind.
+- Biochemical `readouts[]` and phenotype `reports_on[]` edges run
+  **source/target SWAPPED** relative to every other pass: FROM the
+  underlying mechanism TO the biomarker/phenotype (a biomarker is a
+  downstream observation, not an upstream cause).
+- Genetic items infer `contributes_to` edges via a whole gene-key-
+  matching subsystem (`_gene_lookup_keys`/`_descriptor_lookup_keys`/
+  `_name_lookup_key`), gated by `_genetic_item_infers_mechanism_edges`
+  (an `association`/`relationship_type` word-list check that suppresses
+  edges for `MODIFIER`/`BIOMARKER`/`DISPUTED`/`PROTECTIVE`/`UNKNOWN`-
+  flavored associations) — none of this is in the brief's shape at all.
+- Variants (`variants[]` at disease level, or nested under
+  `genetic[].variants[]`) get their own edge-inference pass:
+  `variant_of` to a resolved genetic parent, OR (only if no genetic
+  parent resolves) `contributes_to` to a matched pathophysiology
+  mechanism — a THIRD independent node/edge source the brief never
+  mentioned.
+- `animal_models[]` nodes admit UNCONDITIONALLY on a resolvable label
+  (name, or a `genotype`+`species` fallback via `animal_model_label`) —
+  the Python source's OWN doc comment immediately above that code block
+  claims a model "only becomes a node if some edge uses it," but the
+  code that follows contradicts its own comment and admits every
+  labeled model regardless. This port follows the code, not the stale
+  comment, and says so in `graph.rs`'s doc comment for the next reader
+  who trusts the comment over the code.
+
+**Falsifier result:** `dismech_census` against the full real corpus
+(1,996 files) reports **diseases 1995** (exact match to `MedCare-rs`'s
+own measurement) and **total edges 33,458** (vs. `MedCare-rs`'s 33,328
+— 0.4% apart). Given the resolver was built from the SAME upstream
+source both times, independently, and lands within 0.4% on total edge
+count while landing EXACTLY on disease count, the most likely
+explanation is corpus-snapshot drift between the two pulls (the corpus
+is actively curated; `pathographs/` alone grew from 1,870 to 1,903 to
+1,905 across three points in this repo's own history per earlier
+EPIPHANIES entries), not a resolver behavioral discrepancy — but this is
+not independently confirmed against the exact snapshot `MedCare-rs`
+measured against, and is recorded as a plausible explanation, not a
+proven one.
+
+**Consequence:** `pack.rs` (SoA byte packing) was deliberately NOT
+touched — the 480-byte value slab / 16-byte edge block has no obvious
+way to hold an unbounded per-disorder edge count across 7 edge-list
+fields, and guessing a byte layout for that is exactly what this repo's
+"stop and report" discipline exists to prevent. See `TECH_DEBT.md` for
+the specific decisions this blocks on.
+
+**Status:** Resolver: RESOLVED, high confidence (falsified against full
+corpus, line-cited against real Python). SoA packing: OPEN, deliberately
+deferred. **Confidence:** HIGH on the resolver port; MEDIUM on the exact
+33,458-vs-33,328 explanation (plausible, not independently confirmed).
+
+---
+
 ## 2026-08-18 — RESOLVED: the resolver contradiction. `medcare-dismech` was right; "17 files, tooling only" was wrong.
 
 **Finding:** The 2026-08-17 contradiction between (a) this repo's own
