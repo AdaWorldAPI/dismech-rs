@@ -9,6 +9,35 @@
 
 ---
 
+## `causal-graph-soa-integration-v1` — 2026-08-19
+
+**File:** `.claude/plans/causal-graph-soa-integration-v1.md`
+
+**Status:** PROPOSED — awaits operator ruling on Options A/B/C (O1) before
+any code.
+
+**Summary:** The SoA landing for `graph.rs`'s falsified causal-mechanism
+resolver (the OPEN half of TECH_DEBT's "causal-mechanism graph not yet
+baked"). Recommends **Option A (relations as rows), sub-variants A2+N1**:
+four 512-byte row kinds (disorder `0x0333` / node / edge / predicate),
+references as full `(classid u32, identity u32)` pairs, unbounded lists on
+a side lane extending the `bake.rs` label-lane precedent; Option B
+(edge-block overflow chaining) rejected on five grounds; C = fallback.
+D-DCG-1..10 each carry a pre-registered gate, headlined by the full-corpus
+round-trip falsifier (bake → read back → reconstruct `CausalGraph` → diff
+against the 1,995/33,458 census) with a mandatory disable-run, and
+D-DCG-6's three-sided gate that fails if the two `INDIRECT_*` kinds merge.
+New measurements banked in the plan: `causal_link_type` has FOUR values
+(DIRECT 8,058 / INDIRECT_UNKNOWN 4,150 / INDIRECT_KNOWN 3,825 / UNKNOWN
+361); upstream `perturb/graph.py:146-151` is buggier than a two-way merge
+— `"DIRECT" in "INDIRECT_KNOWN_INTERMEDIATES"` is True (substring), so its
+`elif` is unreachable and ALL link types classify as DIRECT; local
+checkout carries 1,968 disorder files vs 1,990/1,996 on record (snapshot
+drift the round-trip gate must pin). Zero-dep posture preserved (revisit =
+O4); NO CausalEdge64 emission promised (sibling representation). Deferred:
+trajectory artifact, severity→NARS-truth, 4-of-22 runnable models, MONDO
+cross-walk, five unconsumed `kb/` siblings.
+
 ## `ogar-classid-registration-v1` — 2026-08-17
 
 **File:** `.claude/plans/ogar-classid-registration-v1.md`

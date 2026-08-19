@@ -15,6 +15,34 @@
 
 ---
 
+## 2026-08-19 — ownership correction applied to causal-graph-soa-integration-v1 (orchestrator, no agents)
+
+Operator ruling: this repo is the ORACLE, not the integration surface.
+Applied main-thread as an append-only correction — banner + retraction
+markers on §PROPOSED RESOLUTION + a per-deliverable layer split table on
+§DELIVERABLES. No text deleted; the row/lane/mint design is retained
+verbatim as the record the bridge layer inherits. No code touched, no
+resolver change, zero-dep posture untouched and now load-bearing.
+
+Evidence that forced the predicate half: `ogar-dismech` already mints the
+same 19 predicates as `FnIndex 0x90..0xA2` behind a `DisMechVocabulary`
+(OGAR read-only sweep, 2026-08-19), so D-DCG-2's parallel `1..19` freeze
+would have created a second canonical numbering. PR #7 stays DRAFT.
+
+## 2026-08-19 — causal-graph SoA integration plan authored (1 plan agent, orchestrator-consolidated)
+
+One accumulation-tier plan agent, brief carried no-cargo/no-git/no-board-
+writes/one-file-only; wrote `.claude/plans/causal-graph-soa-integration-v1.md`
+(488 lines, D-DCG-1..10, O1–O8). This entry is the orchestrator
+consolidating per the one-writer rule. Notable authoring-time measurements:
+the four-valued `causal_link_type` census (incl. UNKNOWN=361), the upstream
+`perturb/graph.py` substring bug (all link types classify DIRECT — its
+`elif` is unreachable), the 1,968-vs-1,990/1,996 snapshot drift, and the
+single-entry `intermediate_mechanisms` fixture that cannot falsify order
+loss. Cross-repo companions landed the same day in lance-graph (PR #969
+plan wave); the operator's standing model-allocation rule for this session
+applied.
+
 ## 2026-08-18 — F4: causal-mechanism graph resolver ported (`graph.rs`)
 
 **Did:** Extended `dismech-bake` with `crates/dismech-bake/src/graph.rs`
