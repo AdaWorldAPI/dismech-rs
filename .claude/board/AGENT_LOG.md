@@ -15,6 +15,20 @@
 
 ---
 
+## 2026-08-19 — causal-graph SoA integration plan authored (1 plan agent, orchestrator-consolidated)
+
+One accumulation-tier plan agent, brief carried no-cargo/no-git/no-board-
+writes/one-file-only; wrote `.claude/plans/causal-graph-soa-integration-v1.md`
+(488 lines, D-DCG-1..10, O1–O8). This entry is the orchestrator
+consolidating per the one-writer rule. Notable authoring-time measurements:
+the four-valued `causal_link_type` census (incl. UNKNOWN=361), the upstream
+`perturb/graph.py` substring bug (all link types classify DIRECT — its
+`elif` is unreachable), the 1,968-vs-1,990/1,996 snapshot drift, and the
+single-entry `intermediate_mechanisms` fixture that cannot falsify order
+loss. Cross-repo companions landed the same day in lance-graph (PR #969
+plan wave); the operator's standing model-allocation rule for this session
+applied.
+
 ## 2026-08-18 — F4: causal-mechanism graph resolver ported (`graph.rs`)
 
 **Did:** Extended `dismech-bake` with `crates/dismech-bake/src/graph.rs`
