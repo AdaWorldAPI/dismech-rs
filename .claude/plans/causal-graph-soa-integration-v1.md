@@ -1,8 +1,72 @@
 # Plan: `causal-graph-soa-integration-v1`
 
-**Status:** PROPOSED — zero code changes in this document. Every option
-below needs an operator call before a line is written (§OPEN OPERATOR
-DECISIONS).
+> ## ⊘ OWNERSHIP CORRECTION — 2026-08-19 (operator ruling). READ THIS FIRST.
+>
+> **`dismech-rs` IS THE ORACLE, NOT THE INTEGRATION SURFACE.** This crate
+> exists to be a clean, independently understandable, near-100%-semantic
+> Rust transcode of upstream Monarch DisMech. **Its value is precisely that
+> it remains boring.** A researcher who has never heard of our wider
+> architecture must be able to open it and see *"this is the Rust transcode
+> of upstream DisMech"* — not *"this is a proprietary cognitive architecture
+> wearing a DisMech costume."* That separation is part of the scientific
+> value and is a **hard design constraint**.
+>
+> The ruled boundary:
+>
+> ```
+> upstream Monarch DisMech
+>          ↓
+>     dismech-rs            ← semantic oracle (THIS REPO — stays boring)
+>          ↓
+>   ogar-dismech / ogar-from-dismech   ← interpretation bridge
+>          ↓
+>     lance-graph           ← HHTL / masks / reasoning
+> ```
+>
+> **§PROPOSED RESOLUTION below crosses that boundary and is therefore
+> RETRACTED AS A dismech-rs DELIVERABLE** — retained verbatim, per
+> append-only discipline, as the *design record* the bridge layer should
+> inherit. Specifically retracted from this repo's ownership: the four
+> 512-byte row kinds, the edge-row value-slab byte map, the side-lane
+> design, the new classid mints, the predicate-row ontology, and the
+> 16-byte edge-block summary. Those are integration-layer concerns.
+>
+> **The measured reason the predicate half must move** (OGAR sweep,
+> 2026-08-19): `OGAR/crates/ogar-dismech/src/lib.rs` **already mints the
+> same 19 causal predicates** as `FnIndex` consts `0x90..0xA2` (`:141-161`)
+> behind a real `DisMechVocabulary` (`:190-222`, `plug_into` at `:245-249`),
+> alongside `DISMECH_CONCEPT_ID = 0x0333` (`:89`) and
+> `dismech_render_classid` (`:95-97`). D-DCG-2's proposal to freeze a
+> *second* numbering `1..19` in this repo would create two frozen
+> numberings for one vocabulary, in two repos, neither aware of the other.
+> **Only one may be canonical, and the one that already shipped wins.**
+>
+> **What SURVIVES here, unchanged and still wanted** — the oracle and
+> falsifier work, which is the valuable half:
+> the resolver untouched · the corpus census (D-DCG-1) · `causal_link_type`
+> four-value preservation · the INDIRECT_KNOWN vs INDIRECT_UNKNOWN
+> anti-collapse gate (D-DCG-6) · `intermediate_mechanisms` order
+> preservation · snapshot pinning · determinism · a round-trip falsifier
+> **re-scoped to the oracle's own artifact rather than to a Lance row** ·
+> the mandatory anti-vacuity disable-run · measured corpus drift · and the
+> upstream substring bug recorded as an anti-pattern rather than copied.
+> The zero-dep posture (F2) is **preserved and now load-bearing**: it is
+> what keeps this crate independently valuable.
+>
+> **Successor:** `lance-graph`
+> `docs/architecture/ARC-B-OWNERSHIP-AND-ADDRESSING-REASSESSMENT.md` §2
+> carries the full three-way split and the reasoning. A bridge crate
+> (`ogar-from-dismech`, per the `ogar-from-ruff` precedent) is an OGAR-side
+> call, not this repo's to make.
+>
+> **Status: PROPOSED → SPLIT-PENDING.** Do not implement §PROPOSED
+> RESOLUTION from this repo. A successor `dismech-oracle-fidelity-v1` plan
+> should carry the surviving deliverables alone.
+
+**Status:** ~~PROPOSED~~ **SPLIT-PENDING** — zero code changes in this
+document. Every option below needs an operator call before a line is
+written (§OPEN OPERATOR DECISIONS), and the integration half now needs a
+*different repo* as well.
 **Repo:** `AdaWorldAPI/dismech-rs` (**public**).
 **Subject:** land `graph::build_causal_graph`'s output — today resolved
 in memory and thrown away — into the 512-byte `NodeRow` SoA, closing the
@@ -94,6 +158,19 @@ against the snapshot that produced it.
 ---
 
 ## PROPOSED RESOLUTION
+
+> **⊘ RETRACTED AS A `dismech-rs` DELIVERABLE (2026-08-19 ownership ruling —
+> see the banner at the top of this file).** Everything from here to
+> §DELIVERABLES designs generic Lance row architecture, addresses, and
+> classid mints — integration-layer concerns that belong to
+> `ogar-dismech`/`ogar-from-dismech` and `lance-graph`. It is **retained
+> verbatim as the design record the bridge layer inherits**, not deleted:
+> the analysis (Option B's five rejection grounds, the A2/N1
+> promotability argument, the evidence-field split rule, the 1.7% tail
+> rule) is sound work that the right layer should not have to redo.
+> **Read it as input to a bridge-side plan, never as work this crate
+> performs.**
+
 
 **The constraint, precisely:** one disorder's edges are unbounded across 7
 edge-list fields; the row is fixed at 512 bytes with a 16-byte edge block of
@@ -310,6 +387,28 @@ lane. No vocabulary is pinned before D-DCG-1 measures its distinct values.
 ---
 
 ## DELIVERABLES
+
+> **⊘ OWNERSHIP SPLIT (2026-08-19).** Per the banner at the top of this
+> file, the ten deliverables below now divide by layer. **Only the ORACLE
+> column is `dismech-rs` work.**
+>
+> | D-id | Layer | Note |
+> |---|---|---|
+> | **D-DCG-1** census | **ORACLE — keep** | pure measurement over the corpus |
+> | **D-DCG-2** address scheme + 19 predicate ordinals | ⊘ **BRIDGE** | `ogar-dismech` already froze the 19 as `FnIndex 0x90..0xA2`; a second numbering is forbidden. The *collision* and *determinism* gates are good and transfer with it. |
+> | **D-DCG-3** `pack_*_row` | ⊘ **BRIDGE / lance-graph** | generic row architecture |
+> | **D-DCG-4** side lane | ⊘ **BRIDGE / lance-graph** | generic variable-length storage |
+> | **D-DCG-5** round-trip falsifier | **ORACLE — keep, RE-SCOPED** | verify against the oracle's own artifact, not a Lance row. The mandatory disable-run stays mandatory. |
+> | **D-DCG-6** INDIRECT_* anti-collapse | **ORACLE — keep** | the distinction is corpus truth; this is the most valuable gate in the plan |
+> | **D-DCG-7** edge-block summary | ⊘ **lance-graph** | a reading of the canonical edge tenant |
+> | **D-DCG-8** bake driver + `.soa` | **SPLIT** | oracle keeps determinism + honest counters; the row/lane emission moves |
+> | **D-DCG-9** posture check | **ORACLE — keep, PROMOTED** | the zero-dep assertion is now a *boundary* test, not hygiene |
+> | **D-DCG-10** OGAR mints + guards | ⊘ **OGAR** | address authority was always `ogar-dismech`'s |
+>
+> Add, oracle-side: **`intermediate_mechanisms` order preservation** and
+> **snapshot pinning** as first-class deliverables in their own right —
+> D-DCG-4's multi-entry-fixture gate is genuinely an oracle-fidelity test
+> and must not be lost when the lane design moves out.
 
 Each carries a **pre-registered gate** — written before the work, failing
 before the work, per this repo's own falsifier discipline.

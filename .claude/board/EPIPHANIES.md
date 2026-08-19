@@ -1,3 +1,56 @@
+## 2026-08-19 — E-THE-ORACLE-IS-NOT-THE-INTEGRATION-SURFACE-1
+
+**Status:** RULING (operator, 2026-08-19), applied to
+`.claude/plans/causal-graph-soa-integration-v1.md` as an ownership
+correction banner + a per-deliverable layer split.
+
+**The ruling:** `dismech-rs` is the **semantic oracle**, not the
+integration surface. It exists so that upstream Monarch DisMech semantics
+and Rust-transcoded DisMech semantics can be compared, and **its value is
+precisely that it remains boring.** A researcher who has never heard of
+the wider architecture must be able to open this repo and see *"the Rust
+transcode of upstream DisMech"* — not *"a proprietary cognitive
+architecture wearing a DisMech costume."* That separation is scientific
+value, and it is a hard design constraint, not a style preference.
+
+The boundary: `upstream DisMech → dismech-rs (oracle) → ogar-dismech /
+ogar-from-dismech (interpretation bridge) → lance-graph (HHTL / masks /
+reasoning)`. Nothing about HHTL, masks, `CausalEdge64`, ontology
+hydration, or known-unknown inference belongs in this crate.
+
+**What crossed the line in the plan:** the four 512-byte row kinds, the
+edge-row value-slab byte map, the side-lane design, the new classid
+mints, the predicate-row ontology, and the 16-byte edge-block summary.
+All retained verbatim as the design record the bridge layer inherits —
+retracted as *this repo's* deliverables.
+
+**The sharpest instance, measured:**
+`OGAR/crates/ogar-dismech/src/lib.rs` **already mints the same 19 causal
+predicates** as `FnIndex` consts `0x90..0xA2` (`:141-161`) behind a real
+`DisMechVocabulary` (`:190-222`). D-DCG-2 proposed freezing a *second*
+numbering `1..19` here — two frozen numberings for one vocabulary, in two
+repos, neither aware of the other. Only one may be canonical, and the one
+that already shipped wins.
+
+**What survives, and is the valuable half:** the untouched resolver; the
+corpus census; four-value `causal_link_type` preservation; the
+INDIRECT_KNOWN vs INDIRECT_UNKNOWN anti-collapse gate; intermediate-list
+order preservation; snapshot pinning; determinism; the round-trip
+falsifier **re-scoped to the oracle's own artifact**; the mandatory
+anti-vacuity disable-run; and the upstream substring bug recorded as an
+anti-pattern rather than copied. The zero-dep posture is now *load-bearing*
+— it is what keeps this crate independently valuable.
+
+**Corpus facts measured this pass** (for the downstream POC, recorded here
+because they are oracle observations): 693/1,968 files carry an
+`INDIRECT_UNKNOWN_INTERMEDIATES` edge; 300/1,968 carry both kinds;
+**3,454 `intermediate_mechanisms` entries, 0 carrying an ontology id** —
+100% free prose. Any downstream recovery test must therefore rank over
+text, never join on ids.
+
+Cross-ref: lance-graph
+`docs/architecture/ARC-B-OWNERSHIP-AND-ADDRESSING-REASSESSMENT.md` §2.
+
 ## 2026-08-18 — The causal-mechanism graph resolver, ported directly against the real Python (F4)
 
 **What happened:** F4 of the `MedCare-rs`-authored transcode plan asked
