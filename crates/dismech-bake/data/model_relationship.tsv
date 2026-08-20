@@ -1,0 +1,19 @@
+# model_relationship.tsv — `*[].modeled_mechanisms[].relationship`
+# source_token	predicate
+# Port of model_edge_predicate (graph.py:111-117). Matched case-insensitively
+# (upstream uppercases before matching).
+# Measured 2026-08-20: the `relationship` KEY carries 12 distinct values across
+# the corpus (1,465 occurrences) while this table lists 6 — READOUT_OF (915),
+# CORRELATES_WITH (42), CANONICAL_PATHWAY (32), PHARMACODYNAMIC_MARKER_OF (19)
+# and 2 more are NOT here. SCOPE CAVEAT: that count POOLS `relationship` across
+# `readouts[]`/`reports_on[]` and `modeled_mechanisms[]`; which values actually
+# reach model_edge_predicate needs a per-site check, so no misclassification
+# rate is claimed. What is certain: the fallback is `models`, so any unlisted
+# token becomes a valid-looking predicate. Parity is preserved (same fallback
+# as Python); the token is REPORTED rather than silently absorbed.
+RECAPITULATES	models
+PARTIALLY_RECAPITULATES	partially_models
+FAILS_TO_RECAPITULATE	fails_to_model
+PERTURBS	perturbs
+MEASURES	measures
+RESCUES	rescues

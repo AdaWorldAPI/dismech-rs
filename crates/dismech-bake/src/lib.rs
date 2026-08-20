@@ -47,3 +47,4 @@ pub mod bake;
 pub mod graph;
 pub mod model;
 pub mod pack;
+pub mod vocab;

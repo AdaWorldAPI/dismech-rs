@@ -1,0 +1,13 @@
+# environmental_effect.tsv — `environmental[].influences_mechanisms[].environmental_effect`
+# source_token	predicate
+# Port of ENVIRONMENTAL_EFFECT_PREDICATES (graph.py:76-109).
+# Measured 2026-08-20: 5 distinct values, 576 occurrences — TRIGGERS 291,
+# PREDISPOSES 197, EXACERBATES 65, MODULATES 16, PROTECTS_AGAINST 7.
+# Corpus == this table (0 unmatched). Fallback predicate is `influences`,
+# matching upstream Python exactly; a token not listed here still resolves to
+# the fallback (parity) but is REPORTED via `vocab::unknown_tokens`.
+TRIGGERS	triggers
+EXACERBATES	exacerbates
+PREDISPOSES	predisposes_to
+PROTECTS_AGAINST	protects_against
+MODULATES	modulates

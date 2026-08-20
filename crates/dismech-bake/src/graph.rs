@@ -506,6 +506,17 @@ fn model_edge_predicate(relationship: Option<&str>) -> &'static str {
 pub fn build_causal_graph(doc: &Disorder) -> CausalGraph {
     let mut graph = CausalGraph::default();
 
+    // Vocabulary drift, reported BEFORE referential integrity so a reader sees
+    // source-noise and structural defects in one place. This pass changes no
+    // predicate and drops no edge -- transcode parity with `graph.py` is
+    // untouched; what changes is that a fail-open fallback is no longer silent.
+    // See `crate::vocab` for the measured per-field vocabulary sizes.
+    graph.integrity_issues.extend(
+        crate::vocab::unknown_tokens(doc)
+            .into_iter()
+            .map(|t| t.to_string()),
+    );
+
     collect_named_nodes(doc, &mut graph);
     collect_animal_model_nodes(doc, &mut graph);
     collect_variant_nodes(doc, &mut graph);
@@ -1080,7 +1091,7 @@ fn check_referential_integrity(graph: &mut CausalGraph) {
             graph.orphan_targets.insert(edge.target.clone());
         }
     }
-    graph.integrity_issues = issues;
+    graph.integrity_issues.extend(issues);
 }
 
 #[cfg(test)]
