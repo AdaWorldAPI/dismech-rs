@@ -17,3 +17,7 @@ path = "src/bin/bake.rs"
 [[bin]]
 name = "dismech_census"
 path = "src/bin/census.rs"
+
+[[bin]]
+name = "dismech_oracle_census"
+path = "src/bin/oracle_census.rs"

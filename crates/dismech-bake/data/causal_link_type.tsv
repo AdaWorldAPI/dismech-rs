@@ -1,0 +1,14 @@
+# causal_link_type.tsv — the CLOSED source vocabulary for `causal_link_type`.
+# source_token	variant	bits2
+# Measured 2026-08-20 over monarch-initiative/dismech kb/disorders/*.yaml
+# (2,100 files, 0 parse errors): exactly 4 distinct values, 17,998 occurrences,
+# at three sites — pathophysiology[]/downstream[] 17,378,
+# environmental[]/influences_mechanisms[] 576, phenotypes[]/sequelae[] 44.
+# Corpus == this table (0 unmatched, 0 never-seen), so this vocabulary is
+# CLOSED and parsing is fail-CLOSED: an unlisted token is an integrity issue,
+# never a silent Unknown. `bits2` is the CausalEdge64 bits 59..60 encoding a
+# downstream consumer hydrates to; dismech-rs itself never packs it.
+DIRECT	Direct	0
+INDIRECT_KNOWN_INTERMEDIATES	IndirectKnownIntermediates	1
+INDIRECT_UNKNOWN_INTERMEDIATES	IndirectUnknownIntermediates	2
+UNKNOWN	Unknown	3
