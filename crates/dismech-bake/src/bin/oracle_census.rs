@@ -12,7 +12,12 @@
 //! committed parser can make must not be made by an ad-hoc script: the script
 //! is unreviewed, unversioned, and its errors are invisible.
 //!
-//! Usage: `dismech_oracle_census <path-to-dismech-checkout>`
+//! Usage: `dismech_oracle_census <path-to-dismech-checkout> [--dump-mediators <tsv>]`
+//!
+//! `--dump-mediators` writes `disease\tsource\ttarget\tmediator` for every
+//! named mediator on a label-KNOWN edge. That file is the input to grounding:
+//! the mediators are prose, so an identity for each one has to be MADE, and
+//! the making must be reviewable rather than living in a shell pipeline.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
@@ -26,9 +31,20 @@ const UNKNOWN_INT: &str = "INDIRECT_UNKNOWN_INTERMEDIATES";
 fn main() {
     let mut args = std::env::args().skip(1);
     let Some(repo) = args.next() else {
-        eprintln!("usage: dismech_oracle_census <path-to-dismech-checkout>");
+        eprintln!("usage: dismech_oracle_census <path> [--dump-mediators <tsv>]");
         std::process::exit(2);
     };
+    let mut dump: Option<PathBuf> = None;
+    let mut dump_nodes: Option<PathBuf> = None;
+    while let Some(a) = args.next() {
+        if a == "--dump-mediators" {
+            dump = args.next().map(PathBuf::from);
+        } else if a == "--dump-nodes" {
+            dump_nodes = args.next().map(PathBuf::from);
+        }
+    }
+    let mut dump_rows: Vec<String> = Vec::new();
+    let mut node_names: BTreeSet<String> = BTreeSet::new();
     let corpus_dir = PathBuf::from(&repo).join("kb").join("disorders");
     if !corpus_dir.is_dir() {
         eprintln!("dismech_oracle_census: {corpus_dir:?} is not a directory");
@@ -64,6 +80,13 @@ fn main() {
             continue;
         };
         let g = graph::build_causal_graph(&doc);
+        if dump_nodes.is_some() {
+            for name in g.nodes.keys() {
+                if !name.trim().is_empty() {
+                    node_names.insert(name.trim().replace('\t', " "));
+                }
+            }
+        }
         let stem = path
             .file_stem()
             .map(|s| s.to_string_lossy().into_owned())
@@ -81,6 +104,15 @@ fn main() {
                     for m in &e.intermediate_mechanisms {
                         mediator_strings += 1;
                         distinct.insert(m.trim().to_string());
+                        if dump.is_some() {
+                            dump_rows.push(format!(
+                                "{}\t{}\t{}\t{}",
+                                stem,
+                                e.source.replace('\t', " "),
+                                e.target.replace('\t', " "),
+                                m.trim().replace('\t', " ")
+                            ));
+                        }
                     }
                 }
                 (KNOWN, false) => known_without += 1,
@@ -119,6 +151,35 @@ fn main() {
     println!("\n-- the source contradiction --");
     println!("  UNKNOWN_INTERMEDIATES that DO name mediators  {contradictory}");
     println!("  (these are neither oracle nor restraint control)");
+
+    if let Some(path) = dump_nodes {
+        let body = format!(
+            "# every distinct causal-graph NODE name -- {} names\n{}\n",
+            node_names.len(),
+            node_names.iter().cloned().collect::<Vec<_>>().join("\n")
+        );
+        std::fs::write(&path, body).unwrap_or_else(|e| panic!("write {path:?}: {e}"));
+        println!(
+            "wrote {} node names -> {}",
+            node_names.len(),
+            path.display()
+        );
+    }
+
+    if let Some(path) = dump {
+        let body = format!(
+            "# disease\tsource\ttarget\tmediator -- {} rows, {} distinct mediators\n{}\n",
+            dump_rows.len(),
+            distinct.len(),
+            dump_rows.join("\n")
+        );
+        std::fs::write(&path, body).unwrap_or_else(|e| panic!("write {path:?}: {e}"));
+        println!(
+            "\nwrote {} mediator rows -> {}",
+            dump_rows.len(),
+            path.display()
+        );
+    }
 }
 
 fn pct(n: usize, d: usize) -> f64 {
