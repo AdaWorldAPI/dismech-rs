@@ -2,7 +2,7 @@
 
 > Mutable "what exists now." Updated in place, not append-only (contrast
 > `PR_ARC_INVENTORY.md` and `EPIPHANIES.md`, which are append-only ledgers).
-> Last updated: 2026-08-17.
+> Last updated: 2026-08-21 (PR #8 merged, `fd64453`).
 
 ## Repository
 
@@ -14,6 +14,34 @@ identity, phenotype, treatment, biochemical, and genetic content). Carries
 
 Created 2026-08-17. First commit `b91d6a1` on `main`: "dismech-bake: real
 transcode of monarch-initiative/dismech disorder identity."
+
+## 2026-08-21 — #8 MERGED (`fd64453`) — vocab-as-config + the oracle census
+
+- **`vocab.rs`** — three committed TSVs are now the source of the closed
+  vocabularies (`causal_link_type` / `environmental_effect` /
+  `model_relationship`), each header carrying its own measured provenance.
+  `from_source` is **fail-closed**; LLM-noise fallbacks surface as
+  `integrity_issues`, never as a silent default. **Transcode parity is
+  untouched** — no predicate changes, no edge dropped.
+- **`dismech_oracle_census`** — the binary that measures the oracle
+  population, with `--dump-mediators` (3,465 rows) and `--dump-nodes`
+  (31,436 names) for grounding work. Both come from the SAME parser as the
+  census, so a grounding run and its census cannot disagree.
+- **Measured** (2,100 files, 0 parse errors): census
+  `9,073 / 3,978 / 4,539 / 408` = 17,998, reproducing the lance-graph
+  board's `E-DISMECH-CORPUS-CENSUS-1` exactly; label-KNOWN with a named
+  mediator **2,512 (63.1%)** over **549** diseases; label-only **1,466
+  (36.9%)**; distinct mediator strings **3,095**; **92**
+  `INDIRECT_UNKNOWN_INTERMEDIATES` that DO name mediators.
+- **The rule this PR paid for:** a measurement a committed parser can make
+  must not be made by an ad-hoc script. The first oracle count came from a
+  Python line-scanner and was wrong by 23 edges; the committed parser is
+  right and runs in under a second.
+- **Open, gating any gold set (operator decision):** the third bucket for
+  the 1,466 label-only edges and the 92 contradictory ones.
+- **Still true:** `pack.rs` carries **disorder identity only**. The causal
+  resolver runs and is measured, but is not packed into the 512-byte
+  `NodeRow`.
 
 ## Crate inventory
 
